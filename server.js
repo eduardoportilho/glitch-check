@@ -24,10 +24,16 @@ app.get("/trafik", function (request, response) {
   console.log('trafik')
   var from = request.query.from;
   var to = request.query.to;
+  var offset = request.query.offset || '00:30:00';
+  var expect = request.query.expect
   
-  trafik.getDepartures(from, to, '00:10:00')
+  trafik.getDepartures(from, to, offset)
     .then(function (result) {
+      console.log(result)
       var msg = createMessage(result)
+      if (expect && msg !== expect) {
+        msg = '⚠️ ' + msg + ' ⚠️'
+      } 
       doRequest({
         url: notificationURL,
         method: 'POST',
@@ -47,19 +53,25 @@ app.get("/trafik", function (request, response) {
 
 
 function createMessage(departures) {
- return departures.map(departure => {
-  var train = departure.train;
-  var status = departure.canceled ? 'Canceled' :
-    departure.delayed ? 'Delayed' : 'On time';
+  var departureMsgs = departures.map(departure => {
+    // var train = departure.train;
+    // var track = departure.track || '?';
+    // var status = departure.canceled ? 'Canceled' :
+    //   departure.delayed ? 'Delayed' : 'On time';
 
-  var time = departure.time
-  if (departure.delayed) {
-    time += ' => ' + departure.estimatedTime;
-  }
+    var time = removeSecs(departure.time)
+    if (departure.delayed) {
+      time += ' DELAYED TO ' + departure.estimatedTime;
+    }
+    return time
+  })
+  return '[' + departureMsgs.join(',') + ']'; 
+}
 
-  var track = departure.track || '?';
-   return ['train:' + train, time, status, 'track: ' + track].join(' - ')
- }).join('\n'); 
+function removeSecs(time) {
+  let tokens = time.split(':')
+  return tokens[0] + ':' + tokens[1]
+  
 }
 
 
