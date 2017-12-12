@@ -33,7 +33,9 @@ app.get("/trafik", function (request, response) {
       var msg = createMessage(result)
       if (expect && msg !== expect) {
         msg = '⚠️ ' + msg + ' ⚠️'
-      } 
+      } else {
+        msg = '✅ ' + msg
+      }
       doRequest({
         url: notificationURL,
         method: 'POST',
