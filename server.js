@@ -67,7 +67,7 @@ function createMessage(departures) {
     }
     return time
   })
-  return '[' + departureMsgs.join(',') + ']'; 
+  return '[' + departureMsgs.join(' ; ') + ']'; 
 }
 
 function removeSecs(time) {
